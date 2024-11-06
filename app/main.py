@@ -8,6 +8,8 @@ import logging
 from itertools import cycle
 import asyncio
 
+import uvicorn
+
 from app import config
 
 # 配置日志
@@ -115,3 +117,7 @@ async def health_check(authorization: str = Header(None)):
     await verify_authorization(authorization)
     logger.info("Health check endpoint called")
     return {"status": "healthy"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
