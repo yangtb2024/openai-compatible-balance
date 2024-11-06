@@ -4,6 +4,7 @@ WORKDIR /app
 
 # 复制所需文件到容器中
 COPY ./app /app/app
+COPY ./main.py /app
 COPY ./requirements.txt /app
 
 RUN pip install --no-cache-dir -r requirements.txt
