@@ -42,7 +42,7 @@ class ChatRequest(BaseModel):
     model: str = "llama-3.2-90b-text-preview"
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 1000
-    stream: bool
+    stream: Optional[bool] = False
 
 
 async def verify_authorization(authorization: str = Header(None)):
