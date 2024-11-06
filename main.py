@@ -41,7 +41,7 @@ class ChatRequest(BaseModel):
     messages: List[dict]
     model: str = "llama-3.2-90b-text-preview"
     temperature: Optional[float] = 0.7
-    max_tokens: Optional[int] = 8192
+    max_tokens: Optional[int]
     stream: Optional[bool] = False
 
 
