@@ -45,8 +45,8 @@ BASE_URL="https://api.openai.com/v1"
 ### 🐳 Docker 部署
 
 ```bash
-docker build -t fastapi-openai-proxy .
-docker run -p 8000:8000 -d fastapi-openai-proxy
+docker build -t openai-comatible-balance .
+docker run -p 8000:8000 -d openai-comatible-balance
 ```
 
 ## 🔌 API 接口
