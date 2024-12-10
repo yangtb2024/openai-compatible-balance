@@ -43,6 +43,17 @@ class ChatRequest(BaseModel):
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 8000
     stream: Optional[bool] = False
+    tools: Optional[List[dict]] = []
+    tool_choice: Optional[str] = "auto"
+
+
+class EmbeddingRequest(BaseModel):
+    input: str | List[str]
+    model: str = "text-embedding-004"
+    encoding_format: Optional[str] = "float"
+    dimensions: Optional[int] = 1536
+    user: Optional[str]
+    response_format: Optional[str] = "float"
 
 
 async def verify_authorization(authorization: str = Header(None)):
@@ -109,6 +120,23 @@ async def chat_completion(request: ChatRequest, authorization: str = Header(None
 
     except Exception as e:
         logger.error(f"Error in chat completion: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/v1/embeddings")
+async def embedding(request: EmbeddingRequest, authorization: str = Header(None)):
+    await verify_authorization(authorization)
+    async with key_lock:
+        api_key = next(key_cycle)
+        logger.info(f"Using API key: {api_key[:8]}...")
+
+    try:
+        client = openai.OpenAI(api_key=api_key, base_url=config.settings.BASE_URL)
+        response = client.embeddings.create(input=request.input, model=request.model)
+        logger.info("Embedding successful")
+        return response
+    except Exception as e:
+        logger.error(f"Error in embedding: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
