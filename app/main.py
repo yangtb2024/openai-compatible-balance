@@ -76,7 +76,7 @@ async def verify_authorization(authorization: str = Header(None)):
     return token
 
 
-@app.get("/v1/models")
+@app.get("/handsome/v1/models")
 async def list_models(authorization: str = Header(None)):
     await verify_authorization(authorization)
     async with key_lock:
@@ -92,7 +92,7 @@ async def list_models(authorization: str = Header(None)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/v1/chat/completions")
+@app.post("/handsome/v1/chat/completions")
 async def chat_completion(request: ChatRequest, authorization: str = Header(None)):
     await verify_authorization(authorization)
     async with key_lock:
@@ -125,24 +125,6 @@ async def chat_completion(request: ChatRequest, authorization: str = Header(None
     except Exception as e:
         logger.error(f"Error in chat completion: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/v1/embeddings")
-async def embedding(request: EmbeddingRequest, authorization: str = Header(None)):
-    await verify_authorization(authorization)
-    async with key_lock:
-        api_key = next(key_cycle)
-        logger.info(f"Using API key: {api_key[:8]}...")
-
-    try:
-        client = openai.OpenAI(api_key=api_key, base_url=BASE_URL)
-        response = client.embeddings.create(input=request.input, model=request.model)
-        logger.info("Embedding successful")
-        return response
-    except Exception as e:
-        logger.error(f"Error in embedding: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/health")
 async def health_check(authorization: str = Header(None)):
