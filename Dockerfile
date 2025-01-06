@@ -13,7 +13,7 @@ ENV ALLOWED_TOKENS=["your_token_1"]
 ENV BASE_URL=https://api.groq.com/openai/v1
 
 # Expose port
-EXPOSE 8000
+EXPOSE 7860
 
 # Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
