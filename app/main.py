@@ -1,16 +1,15 @@
-from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import openai
-from typing import List, Optional
+from typing import List, Optional, Union # 引入 typing.Union
 import logging
 from itertools import cycle
 import asyncio
+import os
 
 import uvicorn
-
-from app import config
 
 # 配置日志
 logging.basicConfig(
@@ -29,8 +28,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API密钥配置
-API_KEYS = config.settings.API_KEYS
+API_KEYS_STR = os.getenv("API_KEYS", "")
+API_KEYS = [key.strip() for key in API_KEYS_STR.split(",") if key.strip()]
+
+ALLOWED_TOKENS_STR = os.getenv("ALLOWED_TOKENS", "")
+ALLOWED_TOKENS = [token.strip() for token in ALLOWED_TOKENS_STR.split(",") if token.strip()]
+
+BASE_URL = os.getenv("BASE_URL")
 
 # 创建一个循环迭代器
 key_cycle = cycle(API_KEYS)
@@ -48,7 +52,7 @@ class ChatRequest(BaseModel):
 
 
 class EmbeddingRequest(BaseModel):
-    input: str | List[str]
+    input: Union[str, List[str]] # 修改这里，使用 typing.Union
     model: str = "text-embedding-004"
     encoding_format: Optional[str] = "float"
     dimensions: Optional[int] = 1536
@@ -66,7 +70,7 @@ async def verify_authorization(authorization: str = Header(None)):
             status_code=401, detail="Invalid Authorization header format"
         )
     token = authorization.replace("Bearer ", "")
-    if token not in config.settings.ALLOWED_TOKENS:
+    if token not in ALLOWED_TOKENS:
         logger.error("Invalid token")
         raise HTTPException(status_code=401, detail="Invalid token")
     return token
@@ -79,7 +83,7 @@ async def list_models(authorization: str = Header(None)):
         api_key = next(key_cycle)
         logger.info(f"Using API key: {api_key[:8]}...")
     try:
-        client = openai.OpenAI(api_key=api_key, base_url=config.settings.BASE_URL)
+        client = openai.OpenAI(api_key=api_key, base_url=BASE_URL)
         response = client.models.list()
         logger.info("Successfully retrieved models list")
         return response
@@ -97,7 +101,7 @@ async def chat_completion(request: ChatRequest, authorization: str = Header(None
 
     try:
         logger.info(f"Chat completion request - Model: {request.model}")
-        client = openai.OpenAI(api_key=api_key, base_url=config.settings.BASE_URL)
+        client = openai.OpenAI(api_key=api_key, base_url=BASE_URL)
         response = client.chat.completions.create(
             model=request.model,
             messages=request.messages,
@@ -131,7 +135,7 @@ async def embedding(request: EmbeddingRequest, authorization: str = Header(None)
         logger.info(f"Using API key: {api_key[:8]}...")
 
     try:
-        client = openai.OpenAI(api_key=api_key, base_url=config.settings.BASE_URL)
+        client = openai.OpenAI(api_key=api_key, base_url=BASE_URL)
         response = client.embeddings.create(input=request.input, model=request.model)
         logger.info("Embedding successful")
         return response
