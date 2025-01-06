@@ -10,7 +10,7 @@ COPY ./requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 ENV API_KEYS=["your_api_key_1"]
 ENV ALLOWED_TOKENS=["your_token_1"]
-ENV BASE_URL=https://api.groq.com/openai/v1
+ENV BASE_URL=https://api.deepseek.com/v1
 
 # Expose port
 EXPOSE 7860
